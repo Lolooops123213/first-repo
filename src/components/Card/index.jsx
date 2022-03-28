@@ -1,12 +1,17 @@
 import styles from './Card.module.scss'
-import globalStyles from '../../index.module.scss'
+import { useState } from 'react'
 
-console.log(globalStyles)
+const Card = ({ id, name, price, image, onClickFavorite, onPlus }) => {
+  const [isAdded, setIsAdded] = useState(false)
 
-const Card = ({ name, price, image, onClick }) => {
+  const onClickPlus = () => {
+    onPlus({ id, name, price, image })
+    setIsAdded(!isAdded)
+  }
+
   return (
     <div className={styles.card}>
-      <div className={styles.favorite}>
+      <div className={styles.favorite} onClick={onClickFavorite}>
         <img src="img/heart.svg" alt="unliked" />
       </div>
       <img width={133} height={112} src={image} alt="Sneakers" />
@@ -16,9 +21,12 @@ const Card = ({ name, price, image, onClick }) => {
           <span>Цена:</span>
           <b>{price} руб.</b>
         </div>
-        <button className={globalStyles.button} onClick={onClick}>
-          <img width={11} height={11} src="/img/plus.svg" alt="Plus" />
-        </button>
+        <img
+          className={styles.plus}
+          onClick={onClickPlus}
+          src={`/img/${isAdded ? 'btn-checked.svg' : 'addToCart.svg'}`}
+          alt="Plus"
+        />
       </div>
     </div>
   )

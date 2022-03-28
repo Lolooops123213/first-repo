@@ -1,34 +1,33 @@
+import CardItem from './CardItem'
 import styles from './Drawer.module.scss'
 
-const Drawer = () => {
+const Drawer = ({ items = [], onClose, removeInCart }) => {
+  const removeItem = (obj) => {
+    removeInCart(obj)
+  }
+
   return (
-    <div className={styles.overlay} style={{ display: 'none' }}>
+    <div className={styles.overlay}>
       <div className={styles.drawer}>
         <h2 className="d-flex justify-between mb-30">
           Корзина
           <img
-            className={styles.removeBtn + 'cu-p'}
+            className={styles.removeBtn + ' cu-p'}
             src="img/cart/btn-remove.svg"
-            alt="Remove"
+            alt="close"
+            onClick={onClose}
           />
         </h2>
-
         <div className={styles.items}>
-          <div className={styles.cartItem + ' d-flex align-center mb-20'}>
-            <div
-              style={{ backgroundImage: 'url(img/sneakers/1.jpg)' }}
-              className={styles.cartItemImg}
-            ></div>
-            <div className="mr-20 flex">
-              <p className="mb-5">Мужские Кроссовки Nike Air Max 270</p>
-              <b>12 999 руб.</b>
-            </div>
-            <img
-              className={styles.removeBtn}
-              src="img/cart/btn-remove.svg"
-              alt="Remove"
+          {items.map((item) => (
+            <CardItem
+              key={item.id}
+              img={item.image}
+              price={item.price}
+              name={item.name}
+              removeItem={() => removeItem(item)}
             />
-          </div>
+          ))}
         </div>
         <div className={styles.cartTotlBlock}>
           <ul>
