@@ -1,6 +1,6 @@
 import styles from './CardItem.module.scss'
 
-const CardItem = ({ img, price, name, removeItem }) => {
+const CardItem = ({ id, img, price, name, onRemoveItem }) => {
   return (
     <div className={styles.cartItem + ' d-flex align-center mb-20'}>
       <div
@@ -15,7 +15,9 @@ const CardItem = ({ img, price, name, removeItem }) => {
         className={styles.removeBtn}
         src="img/cart/btn-remove.svg"
         alt="Remove"
-        onClick={removeItem}
+        onClick={() => {
+          onRemoveItem(id)
+        }}
       />
     </div>
   )

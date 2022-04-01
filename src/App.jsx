@@ -1,32 +1,64 @@
 import { useEffect, useState } from 'react'
-import Card from './components/Card'
 import Drawer from './components/Drawer'
 import Header from './components/Header'
 
+import axios from 'axios'
+
 import globalStyles from './index.module.scss'
+import Home from './Pages/Home'
+import { Route, Routes } from 'react-router-dom'
+import Favorites from './Pages/Favorites'
+import { disableBodyScroll } from 'body-scroll-lock'
+import { enableBodyScroll } from 'body-scroll-lock'
 
 const App = () => {
   const [CartOpened, setCartOpened] = useState(false)
   const [Items, setItems] = useState([])
+  const [searchValue, setSearchValue] = useState('')
   const [CartItems, setCartItems] = useState([])
+  const [favorites, setFavorites] = useState([])
+
+  CartOpened ? disableBodyScroll(document) : enableBodyScroll(document)
 
   useEffect(() => {
-    fetch('https://624181da19f609879247b3a0.mockapi.io/Items')
-      .then((res) => {
-        return res.json()
-      })
-      .then((json) => {
-        setItems(json)
-      })
+    axios.get('/Items').then((res) => {
+      setItems(res.data)
+    })
+
+    axios.get('/cart').then((res) => {
+      setCartItems(res.data)
+    })
+    axios.get('/Favorite').then((res) => {
+      setFavorites(res.data)
+    })
   }, [])
 
   const onAddToCart = (obj) => {
+    axios.post('/cart', obj)
     setCartItems((prev) => [...prev, obj])
   }
 
-  const removeInCart = (obj) => {
-    console.log(obj)
-    setCartItems((prev) => [...prev.filter((item) => item.id != obj.id)])
+  const onAddToFavorite = async (obj) => {
+    try {
+      if (favorites.find((favObj) => favObj.id === obj.id)) {
+        axios.delete(`/Favorite/${obj.id}`)
+      } else {
+        const { data } = await axios.post('/Favorite', obj)
+        setFavorites((prev) => [...prev, data])
+      }
+    } catch (error) {
+      alert('Не удалось добавить в фавориты')
+      console.error(error)
+    }
+  }
+
+  const onRemoveItem = (id) => {
+    axios.delete(`/cart/${id}`)
+    setCartItems((prev) => prev.filter((item) => item.id !== id))
+  }
+
+  const onChangeSearchValue = (e) => {
+    setSearchValue(e.target.value)
   }
 
   return (
@@ -35,36 +67,32 @@ const App = () => {
         <Drawer
           items={CartItems}
           onClose={() => setCartOpened(false)}
-          removeInCart={(obj) => removeInCart(obj)}
+          onRemoveItem={onRemoveItem}
         />
       )}
       <Header onClickCart={() => setCartOpened(true)} />
-      <div className={globalStyles.content + ' p-40'}>
-        <div className="mb-40 d-flex align-center justify-between">
-          <h1>Все кроссовки</h1>
-          <div className={globalStyles.searchBlock + ' d-flex'}>
-            <img src="/img/search.svg" alt="search" />
-            <input placeholder="Поиск..." />
-          </div>
-        </div>
-        <div className={globalStyles.content__cards + ' d-flex'}>
-          {Items.map((item) => (
-            <Card
-              key={item.id}
-              id={item.id}
-              name={item.name}
-              price={item.price}
-              image={item.image}
-              onClickFavorite={() => {
-                console.log('Favorite')
-              }}
-              onPlus={(obj) => {
-                onAddToCart(obj)
-              }}
+      <Routes>
+        <Route
+          path="/"
+          exact
+          element={
+            <Home
+              Items={Items}
+              searchValue={searchValue}
+              onChangeSearchValue={onChangeSearchValue}
+              onAddToFavorite={onAddToFavorite}
+              onAddToCart={onAddToCart}
             />
-          ))}
-        </div>
-      </div>
+          }
+        />
+        <Route
+          path="/favorites"
+          exact
+          element={
+            <Favorites Items={favorites} onAddToFavorite={onAddToFavorite} />
+          }
+        />
+      </Routes>
     </div>
   )
 }
